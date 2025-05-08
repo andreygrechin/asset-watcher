@@ -1,0 +1,10 @@
+---
+name: security scans
+
+on:
+  schedule:
+    - cron: 45 21 * * FRI
+
+jobs:
+  security-scans:
+    uses: andreygrechin/github-actions/.github/workflows/security-scans.yml@main

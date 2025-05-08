@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"advisorynotifications",
+			"advisorynotificationspb",
+			"apiv",
+			"htmltomarkdown",
+			"Kaufmann",
+			"notif"
+		],
+		"cSpell.ignorePaths": [
+			".golangci.yaml",
+			"go.mod",
+			"go.sum",
+			"*.code-workspace",
+		]
+	}
+}
