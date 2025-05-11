@@ -1,0 +1,139 @@
+---
+version: 2
+
+project_name: asset-watcher
+
+force_token: github
+
+before:
+  hooks:
+    - go mod tidy
+    - make lint
+    - make vuln
+    - make test
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    ldflags:
+      - -s
+      - -w
+      - -X {{ .ModulePath }}/internal/config.Version={{ .Version }}
+      - -X {{ .ModulePath }}/internal/config.Commit={{ .Commit }}
+      - -X {{ .ModulePath }}/internal/config.BuildTime={{ .Date }}
+
+archives:
+  - id: default
+    name_template: >-
+      {{- .ProjectName }}_ {{- .Version }}_ {{- .Os }}_ {{- if eq .Arch "amd64" }}x86_64 {{- else if eq .Arch "386" }}i386 {{- else }}{{ .Arch }}{{ end }} {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    builds_info:
+      group: root
+      owner: root
+      mtime: "{{ .CommitDate }}"
+    files:
+      - src: LICENSE*
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+      - src: README*
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+
+brews:
+  - name: asset-watcher
+    ids:
+      - default
+    url_template: "https://github.com/andreygrechin/asset-watcher/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    commit_author:
+      name: Andrey Grechin
+      email: 36399892+andreygrechin@users.noreply.github.com
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    directory: Formula
+
+    homepage: "https://github.com/andreygrechin/asset-watcher"
+    description: A command-line utility to fetch a list of IP addresses across a Google Cloud organization through Google Asset API.
+    license: MIT
+    skip_upload: false
+
+    test: |
+      system "#{bin}/asset-watcher version"
+
+    repository:
+      owner: andreygrechin
+      name: homebrew-tap
+      branch: update-formula-{{ .Tag }}
+      pull_request:
+        enabled: true
+        draft: true
+        base:
+          owner: andreygrechin
+          name: homebrew-tap
+          branch: main
+
+sboms:
+  - artifacts: archive
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot+{{ .ShortCommit }}"
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums_SHA256.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: New features
+      regexp: '^feat(\(.+\))??!?:.+$'
+      order: 100
+    - title: Security updates
+      regexp: '^sec(\(.+\))??!?:.+$'
+      order: 150
+    - title: Bug fixes
+      regexp: '^(fix|refactor)(\(.+\))??!?:.+$'
+      order: 200
+    - title: Dependency updates
+      regexp: '^deps(\(.+\))??!?:.+$'
+      order: 300
+    - title: Documentation updates
+      regexp: '^docs?(\(.+\))??!?:.+$'
+      order: 400
+    - title: Build process updates
+      regexp: '^(build|ci)(\(.+\))??!?:.+$'
+      order: 400
+    - title: Other work
+      order: 9999
+  filters:
+    exclude:
+      - "^.$"
+      - '^test(\(.+\))??!?:.+$'
+
+release:
+  draft: true
+  make_latest: false
+  replace_existing_draft: true
+  name_template: "asset-watcher v{{ .Version }}"
+  footer: |
+    **Full Changelog**: https://github.com/andreygrechin/asset-watcher/compare/{{ .PreviousTag }}...{{ .Tag }}

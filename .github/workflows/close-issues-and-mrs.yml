@@ -1,0 +1,10 @@
+---
+name: close-issues-and-mrs
+
+on:
+  schedule:
+    - cron: "40 1 * * *"
+
+jobs:
+  close-issues-and-mrs:
+    uses: andreygrechin/github-actions/.github/workflows/close-issues-and-mrs.yml@main

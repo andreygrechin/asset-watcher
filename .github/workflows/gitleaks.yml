@@ -1,0 +1,15 @@
+---
+name: gitleaks
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  schedule:
+    - cron: 45 21 * * FRI
+
+jobs:
+  gitleaks:
+    uses: andreygrechin/github-actions/.github/workflows/gitleaks.yml@main

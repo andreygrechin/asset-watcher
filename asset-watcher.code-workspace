@@ -1,0 +1,32 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+    ],
+    "settings": {
+        "cSpell.words": [
+            "advisorynotifications",
+            "advisorynotificationspb",
+            "apiv",
+            "assetpb",
+            "caarlos",
+            "cloudresourcemanager",
+            "coverprofile",
+            "dominikh",
+            "golangci",
+            "gomod",
+            "htmltomarkdown",
+            "Kaufmann",
+            "notif",
+            "staticcheck",
+            "structpb"
+        ],
+        "cSpell.ignorePaths": [
+            ".golangci.yaml",
+            "go.mod",
+            "go.sum",
+            "*.code-workspace",
+        ]
+    }
+}

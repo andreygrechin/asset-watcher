@@ -1,0 +1,12 @@
+---
+name: auto-assign
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened]
+
+jobs:
+  assign-author:
+    uses: andreygrechin/github-actions/.github/workflows/assign-author.yml@main

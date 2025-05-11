@@ -1,0 +1,10 @@
+---
+name: golang-security
+
+on:
+  schedule:
+    - cron: 45 21 * * FRI
+
+jobs:
+  golang-security:
+    uses: andreygrechin/github-actions/.github/workflows/golang-security.yml@main
