@@ -21,14 +21,8 @@ build:
 		-X main.Commit=$(COMMIT)" \
 		-o bin/$(APP_NAME)
 
-docker:
-	docker build --tag $(APP_NAME):latest \
-		--build-arg VERSION=$(VERSION) \
-		--build-arg COMMIT=$(COMMIT) \
-		--build-arg BUILDTIME=$(BUILDTIME) \
-		--build-arg MOD_PATH=$(MOD_PATH) \
-		--build-arg APP_NAME=$(APP_NAME) .
-	docker run --rm $(APP_NAME):latest version
+docker: lint vuln test
+	docker build -t asset-watcher .
 
 fmt:
 	gofumpt -l -w .

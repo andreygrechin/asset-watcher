@@ -47,6 +47,21 @@ export ASSET_WATCHER_INCLUDE_PROJECTS=project-id-3,project-id-4
 ./asset-watcher
 ```
 
+### Run in a local Docker container
+
+```shell
+make docker
+docker run -it --rm \
+  -e ASSET_WATCHER_ORG_ID=012345678912345 \
+  -e ASSET_WATCHER_DEBUG=true \
+  -e ASSET_WATCHER_OUTPUT_FORMAT=table \
+  -e ASSET_WATCHER_EXCLUDE_RESERVED=true \
+  -e ASSET_WATCHER_EXCLUDE_PROJECTS=project-id-1,project-id-2 \
+  -e ASSET_WATCHER_INCLUDE_PROJECTS=project-id-3,project-id-4 \
+  -v $HOME/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json \
+  asset-watcher:latest
+```
+
 ## License
 
 This project is licensed under MIT licenses —  [MIT License](LICENSE).
