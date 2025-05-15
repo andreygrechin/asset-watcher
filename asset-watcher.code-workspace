@@ -14,10 +14,13 @@
             "cloudresourcemanager",
             "coverprofile",
             "dominikh",
+            "goarch",
+            "goarm",
             "golangci",
             "gomod",
             "htmltomarkdown",
             "Kaufmann",
+            "ldflags",
             "notif",
             "staticcheck",
             "structpb"

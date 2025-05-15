@@ -32,6 +32,11 @@ builds:
       - -X {{ .ModulePath }}/internal/config.Version={{ .Version }}
       - -X {{ .ModulePath }}/internal/config.Commit={{ .Commit }}
       - -X {{ .ModulePath }}/internal/config.BuildTime={{ .Date }}
+    ignore:
+      - goos: windows
+        goarch: arm64
+      - goos: linux
+        goarch: arm64
 
 archives:
   - id: default
@@ -72,12 +77,12 @@ brews:
     directory: Formula
 
     homepage: "https://github.com/andreygrechin/asset-watcher"
-    description: A command-line utility to fetch a list of IP addresses across a Google Cloud organization through Google Asset API.
-    license: MIT
+    description: &description A command-line utility to fetch a list of IP addresses across a Google Cloud organization through Google Asset API.
+    license: &license MIT
     skip_upload: false
 
     test: |
-      system "#{bin}/asset-watcher version"
+      system "#{bin}/asset-watcher"
 
     repository:
       owner: andreygrechin
@@ -90,6 +95,43 @@ brews:
           owner: andreygrechin
           name: homebrew-tap
           branch: main
+
+kos:
+  - repositories:
+      - ghcr.io/andreygrechin/asset-watcher
+    base_image: alpine:3.21.0
+    labels:
+      org.opencontainers.image.source: https://github.com/andreygrechin/asset-watcher
+      org.opencontainers.image.url: https://github.com/andreygrechin/asset-watcher
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.created: "{{ .CommitTimestamp }}"
+      org.opencontainers.image.licenses: *license
+      org.opencontainers.image.description: *description
+    annotations:
+      org.opencontainers.image.source: https://github.com/andreygrechin/asset-watcher
+      org.opencontainers.image.url: https://github.com/andreygrechin/asset-watcher
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.created: "{{ .CommitTimestamp }}"
+      org.opencontainers.image.licenses: *license
+      org.opencontainers.image.description: *description
+    user: "10001:10001"
+    tags:
+      - latest
+      - "{{ .Version }}"
+    creation_time: "{{ .CommitTimestamp }}"
+    ko_data_creation_time: "{{ .CommitTimestamp }}"
+    sbom: spdx
+    ldflags:
+      - -s
+      - -w
+      - -X {{ .ModulePath }}/internal/config.Version={{ .Version }}
+      - -X {{ .ModulePath }}/internal/config.Commit={{ .Commit }}
+      - -X {{ .ModulePath }}/internal/config.BuildTime={{ .Date }}
+    bare: true
+    preserve_import_paths: false
+    platforms:
+      - linux/amd64
+      - linux/arm64
 
 sboms:
   - artifacts: archive
