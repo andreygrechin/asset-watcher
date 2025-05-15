@@ -15,8 +15,8 @@ build:
 	go build \
 		-ldflags \
 		"-s \
-        -w \
-        -X main.Version=$(VERSION) \
+		-w \
+		-X main.Version=$(VERSION) \
 		-X main.BuildTime=$(BUILDTIME) \
 		-X main.Commit=$(COMMIT)" \
 		-o bin/$(APP_NAME)
