@@ -124,9 +124,9 @@ kos:
     ldflags:
       - -s
       - -w
-      - -X {{ .ModulePath }}/internal/config.Version={{ .Version }}
-      - -X {{ .ModulePath }}/internal/config.Commit={{ .Commit }}
-      - -X {{ .ModulePath }}/internal/config.BuildTime={{ .Date }}
+      - -X github.com/andreygrechin/asset-watcher/internal/config.Version={{ .Version }}
+      - -X github.com/andreygrechin/asset-watcher/internal/config.BuildTime={{ .CommitTimestamp }}
+      - -X github.com/andreygrechin/asset-watcher/internal/config.Commit="{{ .Commit }}"
     bare: true
     preserve_import_paths: false
     platforms:
