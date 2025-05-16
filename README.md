@@ -34,6 +34,19 @@ brew upgrade asset-watcher
 
 Download the pre-compiled binaries from [the releases page](https://github.com/andreygrechin/asset-watcher/releases/) and copy them to a desired location.
 
+## Required permissions
+
+```shell
+gcloud services enable cloudasset.googleapis.com
+gcloud config set project <your-project-id-where-asset-api-is-enabled>
+# set quota project
+```
+
+To run the tool, you need to have the following permissions:
+
+- `resourcemanager.projects.get`
+- `resourcemanager.projects.list`
+
 ## Usage
 
 ### Run as a binary
