@@ -203,7 +203,4 @@ func TestGetConfig_InvalidOutputFormat(t *testing.T) {
 	})
 }
 
-// Helper function to check if a string contains a substring. (Not used with log.Fatalf tests directly anymore)
-func contains(s, substr string) bool {
-	return strings.Contains(s, substr)
-}
+// (Removed unused `contains` function)
