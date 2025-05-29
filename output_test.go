@@ -17,7 +17,7 @@ func captureStdout(t *testing.T, fn func()) string {
 	oldStdout := os.Stdout
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Fatalf("Failed to create pipe: %v", err)
+		t.Fatalf("failed to create pipe: %v", err)
 	}
 	os.Stdout = w
 
@@ -25,24 +25,24 @@ func captureStdout(t *testing.T, fn func()) string {
 
 	if err := w.Close(); err != nil {
 		if !strings.Contains(err.Error(), "file already closed") {
-			t.Logf("Error closing writer pipe: %v", err) 
+			t.Logf("error closing writer pipe: %v", err)
 		}
 	}
-	os.Stdout = oldStdout 
+	os.Stdout = oldStdout
 
 	var buf bytes.Buffer
 	if _, err := io.Copy(&buf, r); err != nil {
-		t.Logf("Error reading from pipe: %v", err) 
+		t.Logf("error reading from pipe: %v", err)
 	}
 	if err := r.Close(); err != nil {
-		t.Logf("Error closing reader pipe: %v", err) 
+		t.Logf("error closing reader pipe: %v", err)
 	}
 	return buf.String()
 }
 
 // TestOutputToStdOutTable tests the outputToStdOutTable function.
 func TestOutputToStdOutTable(t *testing.T) {
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil)) 
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	ctx := context.Background()
 
 	sampleAssets := []ProcessedAsset{
@@ -57,23 +57,23 @@ func TestOutputToStdOutTable(t *testing.T) {
 		output := captureStdout(t, func() {
 			outputToStdOutTable(ctx, logger, []ProcessedAsset{})
 		})
-		
+
 		// Check for header keywords
 		for _, keyword := range expectedHeaderKeywords {
 			if !strings.Contains(output, keyword) {
-				t.Errorf("Table header keyword '%s' not found in output with no assets. Output:\n%s", keyword, output)
+				t.Errorf("table header keyword '%s' not found in output with no assets. Output:\n%s", keyword, output)
 			}
 		}
 
 		lines := strings.Split(strings.TrimSpace(output), "\n")
 		// Expect at least 2 lines for header and separator, possibly more due to tabwriter.Debug
 		if len(lines) < 2 {
-			t.Errorf("Expected at least 2 lines for header and separator, got %d. Output:\n%s", len(lines), output)
+			t.Errorf("expected at least 2 lines for header and separator, got %d. Output:\n%s", len(lines), output)
 		}
-		
+
 		// Check that specific asset data is not present
 		if strings.Contains(output, "Asset1") || strings.Contains(output, "proj1") {
-			t.Errorf("Found asset data in output when no assets were provided. Output:\n%s", output)
+			t.Errorf("found asset data in output when no assets were provided. Output:\n%s", output)
 		}
 	})
 
@@ -85,20 +85,20 @@ func TestOutputToStdOutTable(t *testing.T) {
 		// Check for header keywords
 		for _, keyword := range expectedHeaderKeywords {
 			if !strings.Contains(output, keyword) {
-				t.Errorf("Table header keyword '%s' not found in output with assets. Output:\n%s", keyword, output)
+				t.Errorf("table header keyword '%s' not found in output with assets. Output:\n%s", keyword, output)
 			}
 		}
 
 		// Check for asset details
 		for _, asset := range sampleAssets {
 			if !strings.Contains(output, asset.Name) {
-				t.Errorf("Asset name %s not found in table output. Output:\n%s", asset.Name, output)
+				t.Errorf("asset name %s not found in table output. Output:\n%s", asset.Name, output)
 			}
 			if !strings.Contains(output, asset.Project) {
-				t.Errorf("Asset project %s not found in table output. Output:\n%s", asset.Project, output)
+				t.Errorf("asset project %s not found in table output. Output:\n%s", asset.Project, output)
 			}
 			if !strings.Contains(output, asset.IPAddress) {
-				t.Errorf("Asset IPAddress %s not found in table output. Output:\n%s", asset.IPAddress, output)
+				t.Errorf("asset IPAddress %s not found in table output. Output:\n%s", asset.IPAddress, output)
 			}
 		}
 	})
@@ -106,7 +106,7 @@ func TestOutputToStdOutTable(t *testing.T) {
 
 // TestOutputToStdOutJSON tests the outputToStdOutJSON function.
 func TestOutputToStdOutJSON(t *testing.T) {
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil)) 
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	ctx := context.Background()
 
 	sampleAssets := []ProcessedAsset{
@@ -122,10 +122,10 @@ func TestOutputToStdOutJSON(t *testing.T) {
 		var unmarshalledOutput []ProcessedAsset
 		err := json.Unmarshal([]byte(output), &unmarshalledOutput)
 		if err != nil {
-			t.Fatalf("Output with no assets is not valid JSON: %v\nOutput was: %s", err, output)
+			t.Fatalf("output with no assets is not valid JSON: %v\nOutput was: %s", err, output)
 		}
 		if len(unmarshalledOutput) != 0 {
-			t.Errorf("Expected empty JSON array, got %d elements", len(unmarshalledOutput))
+			t.Errorf("expected empty JSON array, got %d elements", len(unmarshalledOutput))
 		}
 	})
 
@@ -137,20 +137,20 @@ func TestOutputToStdOutJSON(t *testing.T) {
 		var processedOutput []ProcessedAsset
 		err := json.Unmarshal([]byte(output), &processedOutput)
 		if err != nil {
-			t.Fatalf("Output with assets is not valid JSON: %v\nOutput was: %s", err, output)
+			t.Fatalf("output with assets is not valid JSON: %v\nOutput was: %s", err, output)
 		}
 
 		if len(processedOutput) != len(sampleAssets) {
-			t.Errorf("Expected %d assets in JSON output, got %d", len(sampleAssets), len(processedOutput))
+			t.Errorf("expected %d assets in JSON output, got %d", len(sampleAssets), len(processedOutput))
 		}
 
 		for i, asset := range sampleAssets {
 			if i < len(processedOutput) {
 				if processedOutput[i].Name != asset.Name {
-					t.Errorf("Asset name mismatch in JSON output. Expected %s, got %s", asset.Name, processedOutput[i].Name)
+					t.Errorf("asset name mismatch in JSON output. Expected %s, got %s", asset.Name, processedOutput[i].Name)
 				}
 				if processedOutput[i].Project != asset.Project {
-					t.Errorf("Asset project mismatch in JSON output. Expected %s, got %s", asset.Project, processedOutput[i].Project)
+					t.Errorf("asset project mismatch in JSON output. Expected %s, got %s", asset.Project, processedOutput[i].Project)
 				}
 			}
 		}

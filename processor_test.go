@@ -1,16 +1,16 @@
 package main
 
 import (
-	"context" 
-	"io"      
-	"log/slog" 
+	"context"
+	"io"
+	"log/slog"
 	"reflect"
 	"testing"
-	"time" 
+	"time"
 
 	"cloud.google.com/go/asset/apiv1/assetpb"
 	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb" 
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestSplitString(t *testing.T) {
@@ -72,9 +72,9 @@ func TestGetProjectID(t *testing.T) {
 	}{
 		{name: "asset with correct project ID", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: "//cloudresourcemanager.googleapis.com/projects/my-project-123"}, want: "my-project-123"},
 		{name: "asset with different parent asset type", asset: &assetpb.ResourceSearchResult{ParentAssetType: "compute.googleapis.com/Instance", ParentFullResourceName: "//cloudresourcemanager.googleapis.com/projects/another-project-456"}, want: "N/A"},
-		{name: "asset with project parent type but empty resource name", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: ""}, want: ""}, 
+		{name: "asset with project parent type but empty resource name", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: ""}, want: ""},
 		{name: "asset with project parent type but malformed resource name (no slashes)", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: "my-project-malformed"}, want: "my-project-malformed"},
-		{name: "asset with project parent type but resource name is just slashes", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: "//"}, want: ""}, 
+		{name: "asset with project parent type but resource name is just slashes", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: "//"}, want: ""},
 		{name: "asset with project parent type, resource name ends with slash", asset: &assetpb.ResourceSearchResult{ParentAssetType: "cloudresourcemanager.googleapis.com/Project", ParentFullResourceName: "//cloudresourcemanager.googleapis.com/projects/project-ending-slash/"}, want: ""},
 	}
 
@@ -97,7 +97,7 @@ func newTestAssetHelper(name, projectID, state, ipAddress string, createTime tim
 		asset.ParentAssetType = "cloudresourcemanager.googleapis.com/Project"
 		asset.ParentFullResourceName = "//cloudresourcemanager.googleapis.com/projects/" + projectID
 	} else {
-		asset.ParentAssetType = "organizations/org-id" 
+		asset.ParentAssetType = "organizations/org-id"
 		asset.ParentFullResourceName = "//cloudresourcemanager.googleapis.com/organizations/org-id"
 	}
 
@@ -123,12 +123,12 @@ func TestProcessAssets_Conceptual(t *testing.T) {
 	// Full testing of `ProcessAssets` with varied inputs would require refactoring
 	// `processor.go` or using integration tests.
 
-	ctx := context.Background()                             // Required for NewAssetProcessor
+	ctx := context.Background()                              // Required for NewAssetProcessor
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil)) // Required for NewAssetProcessor
 
 	baseTime := time.Date(2024, 1, 10, 12, 0, 0, 0, time.UTC)
 	expectedFormattedTime := baseTime.Format("2006-01-02 15:04:05")
-	
+
 	// Example asset for demonstrating ProcessedAsset mapping
 	assetActive := newTestAssetHelper("active-asset", "proj-A", "ACTIVE", "1.2.3.4", baseTime)
 	// Unused asset variables removed: assetReserved, assetExcludedProj, assetIncludedProj
@@ -143,17 +143,17 @@ func TestProcessAssets_Conceptual(t *testing.T) {
 
 	// Test how default IncludeProjects/ExcludeProjects from config are split
 	if len(splitString(cfgForProcessor.IncludeProjects, ",")) != 0 {
-		t.Errorf("Expected default IncludeProjects to result in empty slice, got %d", len(splitString(cfgForProcessor.IncludeProjects, ",")))
+		t.Errorf("expected default IncludeProjects to result in empty slice, got %d", len(splitString(cfgForProcessor.IncludeProjects, ",")))
 	}
 	if len(splitString(cfgForProcessor.ExcludeProjects, ",")) != 0 {
-		t.Errorf("Expected default ExcludeProjects to result in empty slice, got %d", len(splitString(cfgForProcessor.ExcludeProjects, ",")))
+		t.Errorf("expected default ExcludeProjects to result in empty slice, got %d", len(splitString(cfgForProcessor.ExcludeProjects, ",")))
 	}
-	
+
 	// Test the manual mapping part for a single asset, simulating what happens inside ProcessAssets loop
 	singleAsset := assetActive // Use the one defined asset
 	projectID := getProjectID(singleAsset)
 	ipAddress := getIPAddress(singleAsset)
-	
+
 	pa := ProcessedAsset{
 		Name:      singleAsset.GetDisplayName(),
 		Location:  singleAsset.GetLocation(),
@@ -163,11 +163,21 @@ func TestProcessAssets_Conceptual(t *testing.T) {
 		CreatedAt: singleAsset.GetCreateTime().AsTime().Format("2006-01-02 15:04:05"),
 	}
 
-	if pa.Name != "active-asset" { t.Errorf("ProcessedAsset mapping error for Name") }
-	if pa.Project != "proj-A" { t.Errorf("ProcessedAsset mapping error for Project") }
-	if pa.IPAddress != "1.2.3.4" { t.Errorf("ProcessedAsset mapping error for IPAddress") }
-	if pa.Status != "ACTIVE" { t.Errorf("ProcessedAsset mapping error for Status") }
-	if pa.CreatedAt != expectedFormattedTime { t.Errorf("ProcessedAsset mapping error for CreatedAt: got %s, want %s", pa.CreatedAt, expectedFormattedTime) }
+	if pa.Name != "active-asset" {
+		t.Errorf("processedAsset mapping error for Name")
+	}
+	if pa.Project != "proj-A" {
+		t.Errorf("processedAsset mapping error for Project")
+	}
+	if pa.IPAddress != "1.2.3.4" {
+		t.Errorf("processedAsset mapping error for IPAddress")
+	}
+	if pa.Status != "ACTIVE" {
+		t.Errorf("processedAsset mapping error for Status")
+	}
+	if pa.CreatedAt != expectedFormattedTime {
+		t.Errorf("processedAsset mapping error for CreatedAt: got %s, want %s", pa.CreatedAt, expectedFormattedTime)
+	}
 
 	t.Log("Verified ProcessedAsset struct population for a single manually-mapped asset.")
 }

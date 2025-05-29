@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -13,16 +12,16 @@ func setEnvVar(t *testing.T, key, value string) {
 	t.Helper()
 	originalValue, originalExists := os.LookupEnv(key)
 	if err := os.Setenv(key, value); err != nil {
-		t.Fatalf("Failed to set env var %s: %v", key, err)
+		t.Fatalf("failed to set env var %s: %v", key, err)
 	}
 	t.Cleanup(func() {
 		if originalExists {
 			if err := os.Setenv(key, originalValue); err != nil {
-				t.Errorf("Failed to restore env var %s: %v", key, err)
+				t.Errorf("failed to restore env var %s: %v", key, err)
 			}
 		} else {
 			if err := os.Unsetenv(key); err != nil {
-				t.Errorf("Failed to unset env var %s: %v", key, err)
+				t.Errorf("failed to unset env var %s: %v", key, err)
 			}
 		}
 	})
@@ -37,7 +36,7 @@ func clearEnvVar(t *testing.T, key string) {
 	t.Cleanup(func() {
 		if originalExists {
 			if err := os.Setenv(key, originalValue); err != nil {
-				t.Errorf("Failed to restore env var %s after clearing: %v", key, err)
+				t.Errorf("failed to restore env var %s after clearing: %v", key, err)
 			}
 		}
 	})
@@ -59,26 +58,25 @@ func TestGetConfig_Defaults(t *testing.T) {
 	// Defer cleanup of required var if it wasn't set before this test
 	defer clearEnvVar(t, "ASSET_WATCHER_ORG_ID")
 
-
 	cfg := GetConfig() // GetConfig calls log.Fatalf on error if ORG_ID is missing
 
 	if cfg.OrgID != "test-org-id-defaults" {
-		t.Errorf("Expected OrgID to be 'test-org-id-defaults', got '%s'", cfg.OrgID)
+		t.Errorf("expected OrgID to be 'test-org-id-defaults', got '%s'", cfg.OrgID)
 	}
 	if cfg.Debug != false {
-		t.Errorf("Expected Debug default to be false, got %t", cfg.Debug)
+		t.Errorf("expected Debug default to be false, got %t", cfg.Debug)
 	}
 	if cfg.OutputFormat != "table" {
-		t.Errorf("Expected OutputFormat default to be 'table', got '%s'", cfg.OutputFormat)
+		t.Errorf("expected OutputFormat default to be 'table', got '%s'", cfg.OutputFormat)
 	}
 	if cfg.ExcludeReserved != false {
-		t.Errorf("Expected ExcludeReserved default to be false, got %t", cfg.ExcludeReserved)
+		t.Errorf("expected ExcludeReserved default to be false, got %t", cfg.ExcludeReserved)
 	}
 	if cfg.ExcludeProjects != "" {
-		t.Errorf("Expected ExcludeProjects default to be empty string, got '%s'", cfg.ExcludeProjects)
+		t.Errorf("expected ExcludeProjects default to be empty string, got '%s'", cfg.ExcludeProjects)
 	}
 	if cfg.IncludeProjects != "" {
-		t.Errorf("Expected IncludeProjects default to be empty string, got '%s'", cfg.IncludeProjects)
+		t.Errorf("expected IncludeProjects default to be empty string, got '%s'", cfg.IncludeProjects)
 	}
 }
 
@@ -103,17 +101,17 @@ func TestGetConfig_LoadFromEnv(t *testing.T) {
 	cfg := GetConfig()
 
 	if !reflect.DeepEqual(*cfg, expectedConfig) {
-		t.Errorf("Expected config %+v, got %+v", expectedConfig, *cfg)
+		t.Errorf("expected config %+v, got %+v", expectedConfig, *cfg)
 	}
 }
 
 func TestGetConfig_LoadFromEnv_Include(t *testing.T) {
 	expectedConfig := Config{
 		OrgID:           "env-org-id-include",
-		Debug:           false, // Testing explicit false
+		Debug:           false,   // Testing explicit false
 		OutputFormat:    "table", // Testing explicit table
-		ExcludeReserved: false, // Testing explicit false
-		ExcludeProjects: "", 
+		ExcludeReserved: false,   // Testing explicit false
+		ExcludeProjects: "",
 		IncludeProjects: "proj3,proj4",
 	}
 
@@ -127,7 +125,7 @@ func TestGetConfig_LoadFromEnv_Include(t *testing.T) {
 	cfg := GetConfig()
 
 	if !reflect.DeepEqual(*cfg, expectedConfig) {
-		t.Errorf("Expected config %+v, got %+v", expectedConfig, *cfg)
+		t.Errorf("expected config %+v, got %+v", expectedConfig, *cfg)
 	}
 }
 
@@ -168,7 +166,6 @@ func runTestExpectingFatal(t *testing.T, testName string, setupFunc func()) {
 	// If we reach here, cmd.Run() succeeded (exit code 0) or had an unexpected error.
 	t.Fatalf("%s: GetConfig did not call log.Fatalf as expected. Process exited cleanly or with an unexpected error. Output: %s", testName, output)
 }
-
 
 func TestGetConfig_MissingRequiredEnv(t *testing.T) {
 	runTestExpectingFatal(t, "TestGetConfig_MissingRequiredEnv", func() {
