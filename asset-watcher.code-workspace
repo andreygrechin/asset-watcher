@@ -23,7 +23,8 @@
             "ldflags",
             "notif",
             "staticcheck",
-            "structpb"
+            "structpb",
+            "timestamppb"
         ],
         "cSpell.ignorePaths": [
             ".golangci.yaml",
