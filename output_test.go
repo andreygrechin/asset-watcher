@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -14,11 +13,14 @@ import (
 // captureStdout is a helper function to capture standard output.
 func captureStdout(t *testing.T, fn func()) string {
 	t.Helper()
+
 	oldStdout := os.Stdout
+
 	r, w, err := os.Pipe()
 	if err != nil {
 		t.Fatalf("failed to create pipe: %v", err)
 	}
+
 	os.Stdout = w
 
 	fn() // Execute the function whose output we want to capture
@@ -28,22 +30,25 @@ func captureStdout(t *testing.T, fn func()) string {
 			t.Logf("error closing writer pipe: %v", err)
 		}
 	}
+
 	os.Stdout = oldStdout
 
 	var buf bytes.Buffer
 	if _, err := io.Copy(&buf, r); err != nil {
 		t.Logf("error reading from pipe: %v", err)
 	}
+
 	if err := r.Close(); err != nil {
 		t.Logf("error closing reader pipe: %v", err)
 	}
+
 	return buf.String()
 }
 
 // TestOutputToStdOutTable tests the outputToStdOutTable function.
 func TestOutputToStdOutTable(t *testing.T) {
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	ctx := context.Background()
+	logger := slog.New(slog.DiscardHandler)
+	ctx := t.Context()
 
 	sampleAssets := []ProcessedAsset{
 		{Name: "Asset1", Location: "loc1", Project: "proj1", IPAddress: "1.1.1.1", Status: "ACTIVE", CreatedAt: "2023-01-01"},
@@ -94,9 +99,11 @@ func TestOutputToStdOutTable(t *testing.T) {
 			if !strings.Contains(output, asset.Name) {
 				t.Errorf("asset name %s not found in table output. Output:\n%s", asset.Name, output)
 			}
+
 			if !strings.Contains(output, asset.Project) {
 				t.Errorf("asset project %s not found in table output. Output:\n%s", asset.Project, output)
 			}
+
 			if !strings.Contains(output, asset.IPAddress) {
 				t.Errorf("asset IPAddress %s not found in table output. Output:\n%s", asset.IPAddress, output)
 			}
@@ -106,8 +113,8 @@ func TestOutputToStdOutTable(t *testing.T) {
 
 // TestOutputToStdOutJSON tests the outputToStdOutJSON function.
 func TestOutputToStdOutJSON(t *testing.T) {
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	ctx := context.Background()
+	logger := slog.New(slog.DiscardHandler)
+	ctx := t.Context()
 
 	sampleAssets := []ProcessedAsset{
 		{Name: "Asset1", Location: "loc1", Project: "proj1", IPAddress: "1.1.1.1", Status: "ACTIVE", CreatedAt: "2023-01-01"},
@@ -120,10 +127,12 @@ func TestOutputToStdOutJSON(t *testing.T) {
 		})
 
 		var unmarshalledOutput []ProcessedAsset
+
 		err := json.Unmarshal([]byte(output), &unmarshalledOutput)
 		if err != nil {
 			t.Fatalf("output with no assets is not valid JSON: %v\nOutput was: %s", err, output)
 		}
+
 		if len(unmarshalledOutput) != 0 {
 			t.Errorf("expected empty JSON array, got %d elements", len(unmarshalledOutput))
 		}
@@ -135,6 +144,7 @@ func TestOutputToStdOutJSON(t *testing.T) {
 		})
 
 		var processedOutput []ProcessedAsset
+
 		err := json.Unmarshal([]byte(output), &processedOutput)
 		if err != nil {
 			t.Fatalf("output with assets is not valid JSON: %v\nOutput was: %s", err, output)
@@ -149,6 +159,7 @@ func TestOutputToStdOutJSON(t *testing.T) {
 				if processedOutput[i].Name != asset.Name {
 					t.Errorf("asset name mismatch in JSON output. Expected %s, got %s", asset.Name, processedOutput[i].Name)
 				}
+
 				if processedOutput[i].Project != asset.Project {
 					t.Errorf("asset project mismatch in JSON output. Expected %s, got %s", asset.Project, processedOutput[i].Project)
 				}

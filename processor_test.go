@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"io"
 	"log/slog"
 	"reflect"
 	"testing"
@@ -114,17 +112,16 @@ func newTestAssetHelper(name, projectID, state, ipAddress string, createTime tim
 			},
 		}
 	}
+
 	return asset
 }
 
 func TestProcessAssets_Conceptual(t *testing.T) {
-	// This function remains as a conceptual placeholder due to difficulties in mocking
-	// the concrete `*asset.ResourceSearchResultIterator` needed by `ProcessAssets`.
-	// Full testing of `ProcessAssets` with varied inputs would require refactoring
-	// `processor.go` or using integration tests.
-
-	ctx := context.Background()                              // Required for NewAssetProcessor
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil)) // Required for NewAssetProcessor
+	// This function remains for backward compatibility and demonstrates manual asset mapping.
+	// Note: ProcessAssets has been refactored to use the AssetIterator interface,
+	// and comprehensive unit tests are now available in processor_mock_test.go.
+	ctx := t.Context()                      // Required for NewAssetProcessor
+	logger := slog.New(slog.DiscardHandler) // Required for NewAssetProcessor
 
 	baseTime := time.Date(2024, 1, 10, 12, 0, 0, 0, time.UTC)
 	expectedFormattedTime := baseTime.Format("2006-01-02 15:04:05")
@@ -145,6 +142,7 @@ func TestProcessAssets_Conceptual(t *testing.T) {
 	if len(splitString(cfgForProcessor.IncludeProjects, ",")) != 0 {
 		t.Errorf("expected default IncludeProjects to result in empty slice, got %d", len(splitString(cfgForProcessor.IncludeProjects, ",")))
 	}
+
 	if len(splitString(cfgForProcessor.ExcludeProjects, ",")) != 0 {
 		t.Errorf("expected default ExcludeProjects to result in empty slice, got %d", len(splitString(cfgForProcessor.ExcludeProjects, ",")))
 	}
@@ -166,15 +164,19 @@ func TestProcessAssets_Conceptual(t *testing.T) {
 	if pa.Name != "active-asset" {
 		t.Errorf("processedAsset mapping error for Name")
 	}
+
 	if pa.Project != "proj-A" {
 		t.Errorf("processedAsset mapping error for Project")
 	}
+
 	if pa.IPAddress != "1.2.3.4" {
 		t.Errorf("processedAsset mapping error for IPAddress")
 	}
+
 	if pa.Status != "ACTIVE" {
 		t.Errorf("processedAsset mapping error for Status")
 	}
+
 	if pa.CreatedAt != expectedFormattedTime {
 		t.Errorf("processedAsset mapping error for CreatedAt: got %s, want %s", pa.CreatedAt, expectedFormattedTime)
 	}

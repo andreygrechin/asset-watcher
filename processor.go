@@ -8,11 +8,15 @@ import (
 	"slices"
 	"strings"
 
-	asset "cloud.google.com/go/asset/apiv1"
 	"cloud.google.com/go/asset/apiv1/assetpb"
 	"google.golang.org/api/iterator"
 	"google.golang.org/protobuf/types/known/structpb"
 )
+
+// AssetIterator is an interface for iterating over assets.
+type AssetIterator interface {
+	Next() (*assetpb.ResourceSearchResult, error)
+}
 
 // ProcessedAsset represents the processed asset information.
 type ProcessedAsset struct {
@@ -58,7 +62,7 @@ func splitString(s string, separator string) []string {
 
 // ProcessAssets processes the assets and filters them based on the configuration.
 func (p *AssetProcessor) ProcessAssets(ctx context.Context,
-	assets *asset.ResourceSearchResultIterator,
+	assets AssetIterator,
 ) ([]ProcessedAsset, error) {
 	totalAssets := 0
 
