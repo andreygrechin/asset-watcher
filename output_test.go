@@ -107,6 +107,18 @@ func TestOutputToStdOutTable(t *testing.T) {
 			if !strings.Contains(output, asset.IPAddress) {
 				t.Errorf("asset IPAddress %s not found in table output. Output:\n%s", asset.IPAddress, output)
 			}
+
+			if !strings.Contains(output, asset.Location) {
+				t.Errorf("asset location %s not found in table output. Output:\n%s", asset.Location, output)
+			}
+
+			if !strings.Contains(output, asset.Status) {
+				t.Errorf("asset status %s not found in table output. Output:\n%s", asset.Status, output)
+			}
+
+			if !strings.Contains(output, asset.CreatedAt) {
+				t.Errorf("asset created at %s not found in table output. Output:\n%s", asset.CreatedAt, output)
+			}
 		}
 	})
 }
@@ -155,14 +167,32 @@ func TestOutputToStdOutJSON(t *testing.T) {
 		}
 
 		for i, asset := range sampleAssets {
-			if i < len(processedOutput) {
-				if processedOutput[i].Name != asset.Name {
-					t.Errorf("asset name mismatch in JSON output. Expected %s, got %s", asset.Name, processedOutput[i].Name)
-				}
+			if i >= len(processedOutput) {
+				continue
+			}
 
-				if processedOutput[i].Project != asset.Project {
-					t.Errorf("asset project mismatch in JSON output. Expected %s, got %s", asset.Project, processedOutput[i].Project)
-				}
+			if processedOutput[i].Name != asset.Name {
+				t.Errorf("asset name mismatch in JSON output. Expected %s, got %s", asset.Name, processedOutput[i].Name)
+			}
+
+			if processedOutput[i].Project != asset.Project {
+				t.Errorf("asset project mismatch in JSON output. Expected %s, got %s", asset.Project, processedOutput[i].Project)
+			}
+
+			if processedOutput[i].Location != asset.Location {
+				t.Errorf("asset location mismatch in JSON output. Expected %s, got %s", asset.Location, processedOutput[i].Location)
+			}
+
+			if processedOutput[i].IPAddress != asset.IPAddress {
+				t.Errorf("asset IP address mismatch in JSON output. Expected %s, got %s", asset.IPAddress, processedOutput[i].IPAddress)
+			}
+
+			if processedOutput[i].Status != asset.Status {
+				t.Errorf("asset status mismatch in JSON output. Expected %s, got %s", asset.Status, processedOutput[i].Status)
+			}
+
+			if processedOutput[i].CreatedAt != asset.CreatedAt {
+				t.Errorf("asset created at mismatch in JSON output. Expected %s, got %s", asset.CreatedAt, processedOutput[i].CreatedAt)
 			}
 		}
 	})
