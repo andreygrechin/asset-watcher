@@ -12,83 +12,53 @@ const (
 	defaultOutputFormat = "table"
 )
 
-// Helper to set environment variables and register cleanup.
-func setEnvVar(t *testing.T, key, value string) {
-	t.Helper()
-
-	originalValue, originalExists := os.LookupEnv(key)
-
-	t.Setenv(key, value)
-
-	t.Cleanup(func() {
-		if originalExists {
-			t.Setenv(key, originalValue)
-		} else {
-			_ = os.Unsetenv(key)
-		}
-	})
-}
-
-// Helper to clear environment variables and register cleanup.
-func clearEnvVar(t *testing.T, key string) {
-	t.Helper()
-
-	originalValue, originalExists := os.LookupEnv(key)
-	// No need to check error for Unsetenv, it's fine if it's not set.
-	_ = os.Unsetenv(key)
-
-	t.Cleanup(func() {
-		if originalExists {
-			t.Setenv(key, originalValue)
-		}
-	})
+func cleanEnvVars() {
+	_ = os.Unsetenv("ASSET_WATCHER_ORG_ID")
+	_ = os.Unsetenv("ASSET_WATCHER_DEBUG")
+	_ = os.Unsetenv("ASSET_WATCHER_OUTPUT_FORMAT")
+	_ = os.Unsetenv("ASSET_WATCHER_EXCLUDE_RESERVED")
+	_ = os.Unsetenv("ASSET_WATCHER_EXCLUDE_PROJECTS")
+	_ = os.Unsetenv("ASSET_WATCHER_INCLUDE_PROJECTS")
 }
 
 // TestGetConfig_Defaults tests the default values for non-required fields.
 // Required fields must be set for GetConfig not to call log.Fatalf.
 func TestGetConfig_Defaults(t *testing.T) {
-	// Clear optional environment variables
-	clearEnvVar(t, "ASSET_WATCHER_DEBUG")
-	clearEnvVar(t, "ASSET_WATCHER_OUTPUT_FORMAT")
-	clearEnvVar(t, "ASSET_WATCHER_EXCLUDE_RESERVED")
-	clearEnvVar(t, "ASSET_WATCHER_EXCLUDE_PROJECTS")
-	clearEnvVar(t, "ASSET_WATCHER_INCLUDE_PROJECTS")
+	cleanEnvVars()
 
-	// Set required environment variables
-	setEnvVar(t, "ASSET_WATCHER_ORG_ID", "test-org-id-defaults")
+	t.Setenv("ASSET_WATCHER_ORG_ID", "test-org-id-defaults")
 
-	// Defer cleanup of required var if it wasn't set before this test
-	defer clearEnvVar(t, "ASSET_WATCHER_ORG_ID")
-
-	cfg := GetConfig() // GetConfig calls log.Fatalf on error if ORG_ID is missing
+	cfg := GetConfig()
 
 	if cfg.OrgID != "test-org-id-defaults" {
 		t.Errorf("expected OrgID to be 'test-org-id-defaults', got '%s'", cfg.OrgID)
 	}
 
 	if cfg.Debug != false {
-		t.Errorf("expected Debug default to be false, got %t", cfg.Debug)
+		t.Errorf("expected Debug default to be %t, got %t", ConfigDefaults.Debug, cfg.Debug)
 	}
 
-	if cfg.OutputFormat != defaultOutputFormat {
-		t.Errorf("expected OutputFormat default to be '%s', got '%s'", defaultOutputFormat, cfg.OutputFormat)
+	if cfg.OutputFormat != ConfigDefaults.OutputFormat {
+		t.Errorf("expected OutputFormat default to be '%s', got '%s'", ConfigDefaults.OutputFormat, cfg.OutputFormat)
 	}
 
 	if cfg.ExcludeReserved != false {
-		t.Errorf("expected ExcludeReserved default to be false, got %t", cfg.ExcludeReserved)
+		t.Errorf("expected ExcludeReserved default to be %t, got %t", ConfigDefaults.ExcludeReserved, cfg.ExcludeReserved)
 	}
 
 	if cfg.ExcludeProjects != "" {
-		t.Errorf("expected ExcludeProjects default to be empty string, got '%s'", cfg.ExcludeProjects)
+		t.Errorf("expected ExcludeProjects default to be '%s' string, got '%s'", ConfigDefaults.ExcludeProjects, cfg.ExcludeProjects)
 	}
 
 	if cfg.IncludeProjects != "" {
-		t.Errorf("expected IncludeProjects default to be empty string, got '%s'", cfg.IncludeProjects)
+		t.Errorf("expected IncludeProjects default to be '%s' string, got '%s'", ConfigDefaults.IncludeProjects, cfg.IncludeProjects)
 	}
 }
 
 // TestGetConfig_LoadFromEnv tests loading configuration from environment variables.
 func TestGetConfig_LoadFromEnv(t *testing.T) {
+	cleanEnvVars()
+
 	expectedConfig := Config{
 		OrgID:           "env-org-id",
 		Debug:           true,
@@ -98,12 +68,11 @@ func TestGetConfig_LoadFromEnv(t *testing.T) {
 		IncludeProjects: "", // Will be empty as ExcludeProjects is set
 	}
 
-	setEnvVar(t, "ASSET_WATCHER_ORG_ID", expectedConfig.OrgID)
-	setEnvVar(t, "ASSET_WATCHER_DEBUG", "true")
-	setEnvVar(t, "ASSET_WATCHER_OUTPUT_FORMAT", expectedConfig.OutputFormat)
-	setEnvVar(t, "ASSET_WATCHER_EXCLUDE_RESERVED", "true")
-	setEnvVar(t, "ASSET_WATCHER_EXCLUDE_PROJECTS", expectedConfig.ExcludeProjects)
-	clearEnvVar(t, "ASSET_WATCHER_INCLUDE_PROJECTS") // Ensure include is not set
+	t.Setenv("ASSET_WATCHER_ORG_ID", expectedConfig.OrgID)
+	t.Setenv("ASSET_WATCHER_DEBUG", "true")
+	t.Setenv("ASSET_WATCHER_OUTPUT_FORMAT", expectedConfig.OutputFormat)
+	t.Setenv("ASSET_WATCHER_EXCLUDE_RESERVED", "true")
+	t.Setenv("ASSET_WATCHER_EXCLUDE_PROJECTS", expectedConfig.ExcludeProjects)
 
 	cfg := GetConfig()
 
@@ -113,6 +82,8 @@ func TestGetConfig_LoadFromEnv(t *testing.T) {
 }
 
 func TestGetConfig_LoadFromEnv_Include(t *testing.T) {
+	cleanEnvVars()
+
 	expectedConfig := Config{
 		OrgID:           "env-org-id-include",
 		Debug:           false,               // Testing explicit false
@@ -122,12 +93,11 @@ func TestGetConfig_LoadFromEnv_Include(t *testing.T) {
 		IncludeProjects: "proj3,proj4",
 	}
 
-	setEnvVar(t, "ASSET_WATCHER_ORG_ID", expectedConfig.OrgID)
-	setEnvVar(t, "ASSET_WATCHER_DEBUG", "false")
-	setEnvVar(t, "ASSET_WATCHER_OUTPUT_FORMAT", defaultOutputFormat)
-	setEnvVar(t, "ASSET_WATCHER_EXCLUDE_RESERVED", "false")
-	clearEnvVar(t, "ASSET_WATCHER_EXCLUDE_PROJECTS")
-	setEnvVar(t, "ASSET_WATCHER_INCLUDE_PROJECTS", expectedConfig.IncludeProjects)
+	t.Setenv("ASSET_WATCHER_ORG_ID", expectedConfig.OrgID)
+	t.Setenv("ASSET_WATCHER_DEBUG", "false")
+	t.Setenv("ASSET_WATCHER_OUTPUT_FORMAT", defaultOutputFormat)
+	t.Setenv("ASSET_WATCHER_EXCLUDE_RESERVED", "false")
+	t.Setenv("ASSET_WATCHER_INCLUDE_PROJECTS", expectedConfig.IncludeProjects)
 
 	cfg := GetConfig()
 
@@ -136,7 +106,6 @@ func TestGetConfig_LoadFromEnv_Include(t *testing.T) {
 	}
 }
 
-// runTestExpectingFatal is a helper to test functions that should call log.Fatalf.
 func runTestExpectingFatal(t *testing.T, testName string, setupFunc func()) {
 	t.Helper()
 	// Check if we are in the subprocess
@@ -181,22 +150,14 @@ func runTestExpectingFatal(t *testing.T, testName string, setupFunc func()) {
 
 func TestGetConfig_MissingRequiredEnv(t *testing.T) {
 	runTestExpectingFatal(t, "TestGetConfig_MissingRequiredEnv", func() {
-		// Inside the subprocess, clear the required env var
-		// All other ASSET_WATCHER vars should ideally be cleared or set to defaults
-		// to ensure this is the specific condition causing failure.
-		// The `env` package will pick up other existing ASSET_WATCHER_* vars if not cleared.
-		_ = os.Unsetenv("ASSET_WATCHER_ORG_ID")
-		_ = os.Unsetenv("ASSET_WATCHER_DEBUG")
-		_ = os.Unsetenv("ASSET_WATCHER_OUTPUT_FORMAT")
-		_ = os.Unsetenv("ASSET_WATCHER_EXCLUDE_RESERVED")
-		_ = os.Unsetenv("ASSET_WATCHER_EXCLUDE_PROJECTS")
-		_ = os.Unsetenv("ASSET_WATCHER_INCLUDE_PROJECTS")
+		cleanEnvVars()
 	})
 }
 
 func TestGetConfig_ExcludeAndIncludeProjectsSet(t *testing.T) {
 	runTestExpectingFatal(t, "TestGetConfig_ExcludeAndIncludeProjectsSet", func() {
-		t.Setenv("ASSET_WATCHER_ORG_ID", "test-org-for-exclude-include") // Required
+		cleanEnvVars()
+		t.Setenv("ASSET_WATCHER_ORG_ID", "test-org-for-exclude-include")
 		t.Setenv("ASSET_WATCHER_EXCLUDE_PROJECTS", "projA")
 		t.Setenv("ASSET_WATCHER_INCLUDE_PROJECTS", "projB")
 	})
@@ -204,12 +165,8 @@ func TestGetConfig_ExcludeAndIncludeProjectsSet(t *testing.T) {
 
 func TestGetConfig_InvalidOutputFormat(t *testing.T) {
 	runTestExpectingFatal(t, "TestGetConfig_InvalidOutputFormat", func() {
-		t.Setenv("ASSET_WATCHER_ORG_ID", "test-org-for-invalid-format") // Required
+		cleanEnvVars()
+		t.Setenv("ASSET_WATCHER_ORG_ID", "test-org-for-invalid-format")
 		t.Setenv("ASSET_WATCHER_OUTPUT_FORMAT", "invalid-format")
-		// Ensure other conflicting settings are not present
-		_ = os.Unsetenv("ASSET_WATCHER_EXCLUDE_PROJECTS")
-		_ = os.Unsetenv("ASSET_WATCHER_INCLUDE_PROJECTS")
 	})
 }
-
-// (Removed unused `contains` function)
