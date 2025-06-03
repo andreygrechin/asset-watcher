@@ -7,11 +7,12 @@ import (
 
 	asset "cloud.google.com/go/asset/apiv1"
 	"cloud.google.com/go/asset/apiv1/assetpb"
+	"google.golang.org/api/option"
 )
 
 // Fetcher is an interface for fetching assets.
 type Fetcher interface {
-	FetchAssets(ctx context.Context) (*asset.ResourceSearchResultIterator, error)
+	FetchAssets(ctx context.Context) *asset.ResourceSearchResultIterator
 	Close() error
 }
 
@@ -23,8 +24,13 @@ type GoogleAssetFetcher struct {
 }
 
 // NewGoogleAssetFetcher creates a new Google Asset fetcher.
-func NewGoogleAssetFetcher(ctx context.Context, logger *slog.Logger, cfg *Config) (*GoogleAssetFetcher, error) {
-	c, err := asset.NewClient(ctx)
+func NewGoogleAssetFetcher(
+	ctx context.Context,
+	logger *slog.Logger,
+	cfg *Config,
+	opts ...option.ClientOption,
+) (*GoogleAssetFetcher, error) {
+	c, err := asset.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create asset client: %w", err)
 	}

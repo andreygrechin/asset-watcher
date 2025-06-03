@@ -10,16 +10,27 @@ import (
 // Config represents the configuration structure.
 type Config struct {
 	OrgID           string `env:"ASSET_WATCHER_ORG_ID,required,notEmpty"`
-	Debug           bool   `env:"ASSET_WATCHER_DEBUG"                    envDefault:"false"`
-	OutputFormat    string `env:"ASSET_WATCHER_OUTPUT_FORMAT"            envDefault:"table"`
-	ExcludeReserved bool   `env:"ASSET_WATCHER_EXCLUDE_RESERVED"         envDefault:"false"`
-	ExcludeProjects string `env:"ASSET_WATCHER_EXCLUDE_PROJECTS"         envDefault:""`
-	IncludeProjects string `env:"ASSET_WATCHER_INCLUDE_PROJECTS"         envDefault:""`
+	Debug           bool   `env:"ASSET_WATCHER_DEBUG"`
+	OutputFormat    string `env:"ASSET_WATCHER_OUTPUT_FORMAT"`
+	ExcludeReserved bool   `env:"ASSET_WATCHER_EXCLUDE_RESERVED"`
+	ExcludeProjects string `env:"ASSET_WATCHER_EXCLUDE_PROJECTS"`
+	IncludeProjects string `env:"ASSET_WATCHER_INCLUDE_PROJECTS"`
+}
+
+// ConfigDefaults holds the actual configuration default values.
+var ConfigDefaults = Config{
+	OrgID:           "",
+	Debug:           false,
+	OutputFormat:    "table",
+	ExcludeReserved: false,
+	ExcludeProjects: "",
+	IncludeProjects: "",
 }
 
 // GetConfig returns the configuration structure.
 func GetConfig() *Config {
-	var cfg Config
+	cfg := ConfigDefaults
+
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatalf("failed to parse environment variables: %v\n", err)
 	}

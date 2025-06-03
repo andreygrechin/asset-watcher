@@ -35,6 +35,25 @@ linters:
       - linters:
           - revive
         text: should have comment or be unexported
+      - linters:
+          - lll
+        text: characters long, which exceeds the maximum of
+        path: "^.*_test\\.go$"
+      - linters:
+          - cyclop
+        text: calculated cyclomatic complexity for function
+        path: "^.*_test\\.go$"
+      - linters:
+          - funlen
+        text: is too long
+        path: "^.*_test\\.go$"
+      - linters:
+          - gocognit
+        text: is high
+        path: "^.*_test\\.go$"
+      - linters:
+          - maintidx
+        path: "^.*_test\\.go$"
 
 formatters:
   enable:

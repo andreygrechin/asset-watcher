@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	Version   = "unknown" // unexported
-	BuildTime = "unknown" // BuildTime is set at build time using -X flag
-	Commit    = "unknown" // Commit is set at build time using -X flag
+	Version   = "unknown"
+	BuildTime = "unknown"
+	Commit    = "unknown"
 )
 
 func main() {
@@ -49,7 +49,6 @@ func main() {
 	}
 
 	logger.DebugContext(ctx, "Processed asset:", slog.Int("number_of_asset", len(processedAssets)))
-	logger.WarnContext(ctx, "Processed asset:", slog.Int("number_of_asset", len(processedAssets)))
 
 	outputToStdOut(ctx, logger, processedAssets, cfg.OutputFormat)
 }
