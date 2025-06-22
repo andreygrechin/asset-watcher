@@ -1,4 +1,4 @@
-.PHONY: build fmt lint vuln test release check_clean bump_patch bump_minor bump_major
+.PHONY: all build format fmt lint vuln test release check_clean bump_patch bump_minor bump_major
 
 # Build variables
 VERSION    := $(shell git describe --tags --always --dirty)
@@ -25,8 +25,10 @@ build:
 docker: lint vuln test
 	docker build -t asset-watcher .
 
-fmt:
+format:
 	gofumpt -l -w .
+
+fmt: format
 
 lint: fmt
 	go vet ./...
@@ -41,7 +43,9 @@ cov-integration:
 	rm -fr "${GOCOVERDIR}" && mkdir -p "${GOCOVERDIR}"
 	go build \
 		-ldflags \
-		"-s -w -X $(MOD_PATH)/internal/config.Version=$(VERSION) \
+		"-s \
+		-w \
+		-X $(MOD_PATH)/internal/config.Version=$(VERSION) \
 		-X $(MOD_PATH)/internal/config.BuildTime=$(BUILDTIME) \
 		-X $(MOD_PATH)/internal/config.Commit=$(COMMIT)" \
 		-o bin/$(APP_NAME) \
