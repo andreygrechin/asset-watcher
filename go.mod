@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	cloud.google.com/go/asset v1.21.1
 	github.com/caarlos0/env/v11 v11.3.1
-	google.golang.org/api v0.238.0
+	google.golang.org/api v0.239.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 )
