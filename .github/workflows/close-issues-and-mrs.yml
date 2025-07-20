@@ -3,7 +3,7 @@ name: close-issues-and-mrs
 
 on:
   schedule:
-    - cron: "40 1 * * *"
+    - cron: 45 21 * * FRI
 
 jobs:
   close-issues-and-mrs:
